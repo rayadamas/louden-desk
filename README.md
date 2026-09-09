@@ -12,6 +12,8 @@ analytical lens on the same underlying activity.
 So I kept the structure and threw out the fake data. Every panel here is driven by what I
 actually did - meetings, notes, daily check-ins, posts, outreach - mined from my own vault.
 
+![The Louden Desk dashboard: a KPI row, a stacked activity chart, an activity log, and a cadence ridge plot](docs/screenshot.png)
+
 ## This is a snapshot, not a live dashboard
 
 Worth being explicit, because the design implies otherwise:

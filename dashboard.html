@@ -221,13 +221,14 @@ header.topbar {
   font: 500 10px/1 var(--mono); letter-spacing: .05em; color: var(--muted); text-transform: uppercase;
 }
 .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-wash); }
-.log { list-style: none; margin: 0; padding: 0; max-height: 430px; overflow-y: auto; }
+.log { list-style: none; margin: 0; padding: 0; max-height: 404px; overflow-y: auto; }
 .log li {
-  display: grid; grid-template-columns: 46px 74px 1fr; gap: 9px; align-items: baseline;
+  display: grid; grid-template-columns: 58px 74px 1fr; gap: 9px; align-items: baseline;
   padding: 6px 2px; border-bottom: 1px solid var(--border-2); font-size: 12px;
 }
 .log li:last-child { border-bottom: 0; }
-.log .t { font: 400 10.5px/1.4 var(--mono); color: var(--faint); }
+.log .t { font: 400 10.5px/1.35 var(--mono); color: var(--faint); white-space: nowrap; }
+.log .t i { display: block; font-style: normal; opacity: .8; }
 .log .cn { font: 600 9.5px/1.4 var(--mono); letter-spacing: .04em; color: var(--accent-ink); text-transform: uppercase; }
 .log .tx { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .log .tx .src { color: var(--faint); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; margin-right: 5px; }
@@ -353,6 +354,7 @@ window.__DESK__ = null;
 
   const fmtDay = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: D.tz });
   const fmtDT = iso => new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: D.tz });
+  const fmtTime = iso => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: D.tz }).replace(' AM', 'a').replace(' PM', 'p');
   const ago = d => d === 0 ? 'today' : d === 1 ? '1d ago' : d < 60 ? d + 'd ago' : Math.round(d / 30) + 'mo ago';
 
   // ═══════════════════════════════  BUILD SHELL  ═══════════════════════════
@@ -537,7 +539,7 @@ window.__DESK__ = null;
     const p = panel('col-7', 'Activity History', 'meetings · notes · content · outreach', W.days + 'D · ' + W.history.reduce((s, d) => s + d.total, 0) + ' events');
     const rows = W.history;
     const box = el('div', { class: 'chartbox' });
-    const w = 940, h = 240, m = { t: 12, r: 12, b: 22, l: 30 };
+    const w = 940, h = 340, m = { t: 14, r: 12, b: 24, l: 32 };
     const iw = w - m.l - m.r, ih = h - m.t - m.b;
     const active = SERIES.filter(s => !hidden.has(s.key));
     const stackMax = Math.max(1, ...rows.map(r => active.reduce((a, s) => a + (r[s.key] || 0), 0)));
@@ -616,7 +618,7 @@ window.__DESK__ = null;
     const ul = el('ul', { class: 'log' });
     for (const e of items.slice(0, 90)) {
       ul.append(el('li', { class: e.blocker ? 'blk' : '' },
-        el('span', { class: 't' }, fmtDT(e.ts).replace(',', '')),
+        el('span', { class: 't' }, fmtDay(e.ts), el('i', {}, fmtTime(e.ts))),
         el('span', { class: 'cn' }, e.codename),
         el('span', { class: 'tx', title: e.title },
           el('span', { class: 'src' }, e.source === 'email' ? 'out' : e.source === 'checkin' ? 'log' : e.source.slice(0, 4)),
