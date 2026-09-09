@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+*.log
+
+# local un-redacted build — never commit
+dashboard-data.local.json
+index.local.html
+
+# real taxonomy — names real people and folders
+taxonomy.config.mjs

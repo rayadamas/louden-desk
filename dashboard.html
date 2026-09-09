@@ -1,0 +1,933 @@
+<meta charset="utf-8" />
+<title>Louden Desk</title>
+<meta name="description" content="A mission-control view of Diamond Louden's work and project activity, mined from the vault." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600;700&display=swap" />
+
+<style>
+/* ─────────────────────────────  TOKENS  ───────────────────────────── */
+:root {
+  color-scheme: light;
+  --ground:      #e8eaec;
+  --panel:       #fbfbfc;
+  --panel-2:     #f1f2f3;
+  --border:      #d5d9dd;
+  --border-2:    #e4e7ea;
+  --ink:         #14181c;
+  --ink-2:       #4c535b;
+  --muted:       #737b84;
+  --faint:       #9aa2ab;
+  --accent:      #2a6fd0;
+  --accent-ink:  #1c4f9e;
+  --accent-wash: #e4eefb;
+  --good:        #157f43;
+  --good-mark:   #1baf7a;
+  --warn:        #97640f;
+  --warn-mark:   #eda100;
+  --bad:         #c0392c;
+  --bad-mark:    #e34948;
+  --s1: #2a78d6;  --s2: #eb6834;  --s3: #1baf7a;  --s4: #eda100;  --s5: #e87ba4;
+  --grid-line:   #e6e9ec;
+  --shadow:      0 1px 2px rgba(20,24,28,.04), 0 8px 24px -12px rgba(20,24,28,.10);
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+  --cond: "IBM Plex Sans Condensed", var(--sans);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground:     #0f1215;
+    --panel:      #171b1f;
+    --panel-2:    #1e2329;
+    --border:     #2b3238;
+    --border-2:   #232a30;
+    --ink:        #e8eaed;
+    --ink-2:      #b3bac1;
+    --muted:      #8b939c;
+    --faint:      #626b74;
+    --accent:     #4f97ec;
+    --accent-ink: #8fbdf3;
+    --accent-wash:#16263c;
+    --good:       #3bb97a;
+    --good-mark:  #199e70;
+    --warn:       #e0a33f;
+    --warn-mark:  #c98500;
+    --bad:        #e8635a;
+    --bad-mark:   #e66767;
+    --s1: #3987e5;  --s2: #d95926;  --s3: #199e70;  --s4: #c98500;  --s5: #d55181;
+    --grid-line:  #262c32;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground:     #0f1215;
+  --panel:      #171b1f;
+  --panel-2:    #1e2329;
+  --border:     #2b3238;
+  --border-2:   #232a30;
+  --ink:        #e8eaed;
+  --ink-2:      #b3bac1;
+  --muted:      #8b939c;
+  --faint:      #626b74;
+  --accent:     #4f97ec;
+  --accent-ink: #8fbdf3;
+  --accent-wash:#16263c;
+  --good:       #3bb97a;
+  --good-mark:  #199e70;
+  --warn:       #e0a33f;
+  --warn-mark:  #c98500;
+  --bad:        #e8635a;
+  --bad-mark:   #e66767;
+  --s1: #3987e5;  --s2: #d95926;  --s3: #199e70;  --s4: #c98500;  --s5: #d55181;
+  --grid-line:  #262c32;
+  --shadow:     0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.5);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 13px/1.5 var(--sans);
+  font-feature-settings: "cv05" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+a { color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.tnum { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); }
+
+/* ─────────────────────────────  SHELL  ───────────────────────────── */
+.wrap { max-width: 1360px; margin: 0 auto; padding: 0 clamp(12px, 3vw, 26px) 60px; }
+
+header.topbar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 13px clamp(12px, 3vw, 26px);
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: baseline; gap: 9px; }
+.brand b {
+  font: 600 16px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+}
+.brand span { font: 500 11px/1 var(--mono); color: var(--muted); letter-spacing: .16em; }
+.snap {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 500 11px/1 var(--mono); color: var(--muted); letter-spacing: .04em;
+}
+.snap .dot {
+  width: 7px; height: 7px; transform: rotate(45deg);
+  background: var(--accent); flex: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .snap .dot { animation: pulse 3.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+}
+.topbar .spacer { flex: 1 1 40px; }
+.wsel { display: inline-flex; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+.wsel button {
+  padding: 6px 11px; font: 500 11px/1 var(--mono); letter-spacing: .06em;
+  color: var(--muted); border-right: 1px solid var(--border);
+}
+.wsel button:last-child { border-right: 0; }
+.wsel button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .wsel button[aria-pressed="true"],
+:root:not([data-theme="light"]) .wsel button[aria-pressed="true"] { color: #0b0f14; }
+
+.selbar {
+  display: none; align-items: center; gap: 10px; margin: 14px 0 0;
+  padding: 8px 12px; border: 1px solid var(--accent); border-radius: 3px;
+  background: var(--accent-wash); font: 500 12px var(--mono);
+}
+.selbar.on { display: flex; }
+.selbar .x { margin-left: auto; color: var(--accent-ink); font-weight: 600; padding: 2px 6px; }
+
+/* ─────────────────────────────  GRID  ───────────────────────────── */
+.grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; margin-top: 14px;
+}
+.panel {
+  grid-column: span 12;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 3px;
+  box-shadow: var(--shadow); display: flex; flex-direction: column; min-width: 0;
+}
+.col-3  { grid-column: span 3; }
+.col-4  { grid-column: span 4; }
+.col-5  { grid-column: span 5; }
+.col-6  { grid-column: span 6; }
+.col-7  { grid-column: span 7; }
+.col-8  { grid-column: span 8; }
+@media (max-width: 1080px) {
+  .col-3 { grid-column: span 6; } .col-5, .col-7 { grid-column: span 12; }
+}
+@media (max-width: 720px) {
+  .col-3, .col-4, .col-6 { grid-column: span 12; }
+}
+
+.phead {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 11px 13px 10px; border-bottom: 1px solid var(--border-2);
+}
+.phead h2 {
+  font: 600 11px/1 var(--mono); letter-spacing: .13em; text-transform: uppercase; color: var(--ink);
+  display: flex; align-items: center; gap: 7px;
+}
+.phead h2::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none;
+}
+.phead .motto { font: 400 10.5px/1.3 var(--sans); color: var(--faint); letter-spacing: .02em; }
+.phead .meta { margin-left: auto; font: 500 10.5px/1 var(--mono); color: var(--muted); letter-spacing: .04em; text-align: right; }
+.pbody { padding: 13px; flex: 1; min-width: 0; }
+
+/* ─────────────────────────────  KPI TILES  ───────────────────────────── */
+.kpi .pbody { display: flex; flex-direction: column; gap: 3px; padding: 14px 15px 15px; }
+.kpi .k-label { font: 500 10px/1 var(--mono); letter-spacing: .13em; text-transform: uppercase; color: var(--muted); }
+.kpi .k-val { font: 600 30px/1.05 var(--cond); letter-spacing: -.01em; margin-top: 6px; }
+.kpi .k-val small { font: 500 15px/1 var(--cond); color: var(--muted); }
+.kpi .k-sub { font: 400 11px/1.35 var(--sans); color: var(--ink-2); margin-top: 5px; }
+.kpi .k-sub .up { color: var(--good); font-weight: 600; }
+.kpi .k-sub .down { color: var(--bad); font-weight: 600; }
+.spark-mini { margin-top: auto; padding-top: 10px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px 2px 5px;
+  border-radius: 2px; font: 600 10px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+}
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+.pill.active   { background: color-mix(in srgb, var(--good-mark) 15%, transparent); color: var(--good); }
+.pill.active::before { background: var(--good-mark); }
+.pill.warm     { background: color-mix(in srgb, var(--warn-mark) 18%, transparent); color: var(--warn); }
+.pill.warm::before { background: var(--warn-mark); }
+.pill.cold     { background: var(--panel-2); color: var(--muted); }
+.pill.cold::before { background: var(--faint); }
+.pill.dormant  { background: var(--panel-2); color: var(--faint); }
+.pill.dormant::before { background: var(--faint); opacity: .5; }
+.pill.blocked  { background: color-mix(in srgb, var(--bad-mark) 15%, transparent); color: var(--bad); }
+.pill.blocked::before { background: var(--bad-mark); }
+
+/* ─────────────────────────────  ACTIVITY LOG  ───────────────────────────── */
+.log-ctl { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.chip {
+  padding: 3px 8px; border: 1px solid var(--border); border-radius: 2px;
+  font: 500 10px/1 var(--mono); letter-spacing: .05em; color: var(--muted); text-transform: uppercase;
+}
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-wash); }
+.log { list-style: none; margin: 0; padding: 0; max-height: 430px; overflow-y: auto; }
+.log li {
+  display: grid; grid-template-columns: 46px 74px 1fr; gap: 9px; align-items: baseline;
+  padding: 6px 2px; border-bottom: 1px solid var(--border-2); font-size: 12px;
+}
+.log li:last-child { border-bottom: 0; }
+.log .t { font: 400 10.5px/1.4 var(--mono); color: var(--faint); }
+.log .cn { font: 600 9.5px/1.4 var(--mono); letter-spacing: .04em; color: var(--accent-ink); text-transform: uppercase; }
+.log .tx { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.log .tx .src { color: var(--faint); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; margin-right: 5px; }
+.log li.blk .tx::after { content: " ⚠"; color: var(--bad); }
+
+/* ─────────────────────────────  CHARTS  ───────────────────────────── */
+.chartbox { position: relative; width: 100%; overflow-x: auto; }
+svg .grid-l { stroke: var(--grid-line); stroke-width: 1; }
+svg .axis-t { fill: var(--faint); font: 400 9.5px var(--mono); }
+svg .lbl { fill: var(--muted); font: 500 9.5px var(--mono); }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin: 9px 0 2px; }
+.legend button { display: inline-flex; align-items: center; gap: 6px; font: 500 10.5px var(--mono); color: var(--ink-2); letter-spacing: .03em; }
+.legend button[aria-pressed="false"] { opacity: .35; }
+.legend .sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.statcol { display: flex; flex-direction: column; gap: 9px; }
+.statcol .s { display: flex; flex-direction: column; gap: 1px; }
+.statcol .s .n { font: 600 17px/1 var(--cond); }
+.statcol .s .l { font: 500 9px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+.tooltip {
+  position: fixed; z-index: 90; pointer-events: none; opacity: 0; transition: opacity .1s;
+  background: var(--ink); color: var(--panel); padding: 7px 9px; border-radius: 3px;
+  font: 500 11px/1.45 var(--mono); max-width: 260px; box-shadow: 0 6px 20px -6px rgba(0,0,0,.4);
+}
+.tooltip .tt-h { font-weight: 600; margin-bottom: 2px; }
+.tooltip .tt-r { color: color-mix(in srgb, var(--panel) 72%, transparent); }
+
+/* ─────────────────────────────  ROSTER  ───────────────────────────── */
+.roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(216px, 1fr)); gap: 9px; }
+.rcard {
+  text-align: left; border: 1px solid var(--border); border-radius: 3px; padding: 11px 12px 10px;
+  background: var(--panel); display: flex; flex-direction: column; gap: 7px; transition: border-color .12s, background .12s;
+}
+.rcard:hover { border-color: var(--accent); }
+.rcard[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); }
+.rcard .r-top { display: flex; align-items: baseline; gap: 7px; }
+.rcard .r-num { font: 600 10px/1 var(--mono); color: var(--faint); }
+.rcard .r-cn { font: 600 10px/1 var(--mono); letter-spacing: .06em; color: var(--accent-ink); }
+.rcard .r-name { font: 600 14px/1.15 var(--cond); margin-top: 1px; }
+.rcard .r-tag { font: 400 10.5px/1.3 var(--sans); color: var(--muted); }
+.rcard .r-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
+.rcard .r-ev { font: 500 11px/1 var(--mono); color: var(--ink-2); }
+.rcard .r-age { font: 400 10px/1 var(--mono); color: var(--faint); }
+.rcard.dim { opacity: .32; }
+
+footer {
+  margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--border);
+  font: 400 11px/1.7 var(--sans); color: var(--muted);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 22px;
+}
+footer b { color: var(--ink-2); font: 600 10px/1.6 var(--mono); letter-spacing: .08em; text-transform: uppercase; display: block; }
+footer code { font-family: var(--mono); font-size: 10.5px; background: var(--panel-2); padding: 1px 4px; border-radius: 2px; }
+
+.loading { padding: 80px 20px; text-align: center; color: var(--muted); font-family: var(--mono); }
+</style>
+
+<div id="app" class="loading">loading desk…</div>
+<div class="tooltip" id="tt"></div>
+
+<script>
+/* DATA_PLACEHOLDER */
+window.__DESK__ = null;
+/* END_DATA */
+</script>
+
+<script>
+(async function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const el = (t, a = {}, ...kids) => {
+    const n = document.createElement(t);
+    for (const [k, v] of Object.entries(a)) {
+      if (k === 'class') n.className = v;
+      else if (k === 'html') n.innerHTML = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else if (v !== null && v !== undefined) n.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) if (kid != null) n.append(kid.nodeType ? kid : document.createTextNode(kid));
+    return n;
+  };
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const svgEl = (t, a = {}) => { const n = document.createElementNS(SVGNS, t); for (const [k, v] of Object.entries(a)) n.setAttribute(k, v); return n; };
+
+  // ---- load data -----------------------------------------------------------
+  let D = window.__DESK__;
+  if (!D) {
+    try { D = await (await fetch('./dashboard-data.json', { cache: 'no-store' })).json(); }
+    catch (e) { $('#app').textContent = 'Could not load dashboard-data.json — run: node build-dashboard.mjs'; return; }
+  }
+  if (D.external == null) {
+    try { D.external = await (await fetch('./external-data.json', { cache: 'no-store' })).json(); } catch (e) { /* optional */ }
+  }
+  if (D.external) mergeExternal(D);
+
+  const PROJ = D.projects;
+  const cn = id => (PROJ[id] && PROJ[id].codename) || String(id).replace(/^_/, '').toUpperCase();
+  const pn = id => (PROJ[id] && PROJ[id].name) || id;
+  const SERIES = [
+    { key: 'meeting', label: 'Meetings', c: 'var(--s1)' },
+    { key: 'note', label: 'Notes', c: 'var(--s2)' },
+    { key: 'checkin', label: 'Check-ins', c: 'var(--s3)' },
+    { key: 'post', label: 'Content', c: 'var(--s4)' },
+    { key: 'email', label: 'Outreach', c: 'var(--s5)' },
+  ];
+  const DOWNAMES = { work: 'Work-Dev', tech: 'Tech', bloodline: 'Bloodline', learning: 'Learning', finance: 'Finance', esoteric: 'Esoteric' };
+
+  let WIN = localStorage.getItem('desk.win') || '12w';
+  if (!D.windows[WIN]) WIN = '12w';
+  let SEL = null;                       // selected project id (drill-down)
+  const hidden = new Set();             // hidden history series
+
+  // ---- tooltip ------------------------------------------------------------
+  const TT = $('#tt');
+  const tshow = (html, ev) => { TT.innerHTML = html; TT.style.opacity = 1; tmove(ev); };
+  const tmove = ev => {
+    const p = 14, w = TT.offsetWidth, h = TT.offsetHeight;
+    let x = ev.clientX + p, y = ev.clientY + p;
+    if (x + w > innerWidth - 8) x = ev.clientX - w - p;
+    if (y + h > innerHeight - 8) y = ev.clientY - h - p;
+    TT.style.left = x + 'px'; TT.style.top = y + 'px';
+  };
+  const thide = () => { TT.style.opacity = 0; };
+  addEventListener('scroll', thide, true);
+
+  const fmtDay = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: D.tz });
+  const fmtDT = iso => new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: D.tz });
+  const ago = d => d === 0 ? 'today' : d === 1 ? '1d ago' : d < 60 ? d + 'd ago' : Math.round(d / 30) + 'mo ago';
+
+  // ═══════════════════════════════  BUILD SHELL  ═══════════════════════════
+  const gen = new Date(D.generatedAt);
+  const app = $('#app');
+  app.className = '';
+  app.innerHTML = '';
+
+  const top = el('header', { class: 'topbar' },
+    el('div', { class: 'brand' }, el('b', {}, 'Louden Desk'), el('span', {}, 'work · dev')),
+    el('div', { class: 'snap' }, el('span', { class: 'dot' }),
+      'SNAPSHOT · ' + gen.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: D.tz }) + ' CT'),
+    el('div', { class: 'spacer' }),
+    (() => {
+      const g = el('div', { class: 'wsel', role: 'group', 'aria-label': 'Time window' });
+      for (const w of Object.keys(D.windows)) g.append(el('button', {
+        'aria-pressed': String(w === WIN), onclick: () => { WIN = w; localStorage.setItem('desk.win', w); render(); }
+      }, w.toUpperCase()));
+      return g;
+    })()
+  );
+  document.body.insertBefore(top, app);
+
+  const wrap = el('div', { class: 'wrap' });
+  const selbar = el('div', { class: 'selbar', id: 'selbar' });
+  const grid = el('div', { class: 'grid', id: 'grid' });
+  const foot = el('footer', { id: 'foot' });
+  wrap.append(selbar, grid, foot);
+  app.append(wrap);
+
+  // ═══════════════════════════════  PANEL FACTORY  ═════════════════════════
+  function panel(col, title, motto, meta) {
+    const p = el('section', { class: 'panel ' + col });
+    const h = el('div', { class: 'phead' },
+      el('h2', {}, title),
+      motto ? el('span', { class: 'motto' }, motto) : null,
+      el('span', { class: 'meta', id: '' }, meta || ''));
+    const body = el('div', { class: 'pbody' });
+    p.append(h, body);
+    p._meta = h.querySelector('.meta');
+    p._body = body;
+    return p;
+  }
+
+  // ═══════════════════════════════  RENDER  ═══════════════════════════════
+  function render() {
+    for (const b of top.querySelectorAll('.wsel button')) b.setAttribute('aria-pressed', String(b.textContent.toLowerCase() === WIN));
+    const W = D.windows[WIN];
+    grid.innerHTML = '';
+
+    // selection bar
+    selbar.className = 'selbar' + (SEL ? ' on' : '');
+    selbar.innerHTML = '';
+    if (SEL) {
+      selbar.append(
+        el('span', {}, '▸ FILTER'),
+        el('span', { style: 'color:var(--accent-ink);font-weight:600' }, cn(SEL) + ' · ' + pn(SEL)),
+        el('button', { class: 'x', onclick: () => { SEL = null; render(); } }, 'CLEAR ✕'));
+    }
+
+    grid.append(
+      kpiOutput(W), kpiMomentum(), kpiStreak(), kpiFocus(W),
+      historyPanel(W), logPanel(W),
+      ridgePanel(W),
+      flowPanel(W), domainPanel(W),
+      graphPanel(),
+      rosterPanel(W),
+    );
+    renderFooter();
+  }
+
+  // area sparkline for KPI feet — values array, ~compact
+  function miniSpark(vals, opts = {}) {
+    const w = 300, h = opts.h || 30, mx = Math.max(1, ...vals);
+    const x = i => vals.length <= 1 ? 0 : i / (vals.length - 1) * w;
+    const y = v => h - 1.5 - v / mx * (h - 4);
+    let d = `M ${x(0)} ${h} L ${x(0)} ${y(vals[0])}`;
+    vals.forEach((v, i) => d += ` L ${x(i)} ${y(v)}`);
+    d += ` L ${x(vals.length - 1)} ${h} Z`;
+    const s = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%', height: h, preserveAspectRatio: 'none', style: 'display:block' });
+    s.append(svgEl('path', { d, fill: 'var(--accent)', 'fill-opacity': .12 }));
+    let ld = `M ${x(0)} ${y(vals[0])}`; vals.forEach((v, i) => ld += ` L ${x(i)} ${y(v)}`);
+    s.append(svgEl('path', { d: ld, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 1.4 }));
+    s.append(svgEl('circle', { cx: x(vals.length - 1), cy: y(vals[vals.length - 1]), r: 2.4, fill: 'var(--accent)' }));
+    return el('div', { class: 'spark-mini' }, s);
+  }
+
+  // ─────────────  KPI 1 · OUTPUT  ─────────────
+  function kpiOutput(W) {
+    const p = panel('col-3 kpi', 'Output', null, WIN.toUpperCase());
+    const k = W.kpi;
+    const d = k.outputDelta;
+    p._body.append(
+      el('div', { class: 'k-label' }, 'tracked events'),
+      el('div', { class: 'k-val tnum' }, k.output.toLocaleString()),
+      el('div', { class: 'k-sub' },
+        d == null ? el('span', {}, k.perWeek + ' / week · ' + k.activeDays + ' active days')
+          : el('span', {}, el('span', { class: d >= 0 ? 'up' : 'down' }, (d >= 0 ? '▲ ' : '▼ ') + Math.abs(d) + '%'),
+              ' vs prior ' + WIN + ' (' + k.outputPrev.toLocaleString() + ')')),
+      miniSpark(weeklyRoll(W.history.map(r => r.total))),
+    );
+    return p;
+  }
+  // roll daily values up to ~weekly buckets for a calmer sparkline
+  function weeklyRoll(daily) {
+    if (daily.length <= 16) return daily;
+    const step = Math.ceil(daily.length / 16), out = [];
+    for (let i = 0; i < daily.length; i += step) out.push(daily.slice(i, i + step).reduce((s, v) => s + v, 0));
+    return out;
+  }
+
+  // ─────────────  KPI 2 · MOMENTUM  ─────────────
+  function kpiMomentum() {
+    const m = D.momentum;
+    const p = panel('col-3 kpi', 'Momentum', null, 'WK vs 4-WK');
+    const pos = m.pct >= 0;
+    p._body.append(
+      el('div', { class: 'k-label' }, 'this week vs trailing avg'),
+      el('div', { class: 'k-val tnum', style: 'color:' + (pos ? 'var(--good)' : 'var(--bad)') }, (pos ? '+' : '') + m.pct + '%'),
+      el('div', { class: 'k-sub' }, m.thisWeek + ' events this week · avg ' + m.trailingAvg),
+    );
+    // 6-week mini bars
+    const box = el('div', { class: 'spark-mini' });
+    const mx = Math.max(...m.weeks, 1), w = 300, h = 34, bw = w / m.weeks.length;
+    const s = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%', height: h, preserveAspectRatio: 'none' });
+    m.weeks.forEach((v, i) => {
+      const bh = Math.max(2, v / mx * (h - 4));
+      const r = svgEl('rect', { x: i * bw + 2, y: h - bh, width: bw - 4, height: bh, rx: 1,
+        fill: i === m.weeks.length - 1 ? 'var(--accent)' : 'var(--border)' });
+      r.addEventListener('mouseenter', e => tshow(`<div class="tt-h">${i === 5 ? 'this week' : (6 - i) + 'w ago'}</div><div class="tt-r">${v} events</div>`, e));
+      r.addEventListener('mousemove', tmove); r.addEventListener('mouseleave', thide);
+      s.append(r);
+    });
+    box.append(s);
+    p._body.append(box);
+    return p;
+  }
+
+  // ─────────────  KPI 3 · STREAK  ─────────────
+  function kpiStreak() {
+    const s = D.streak;
+    const p = panel('col-3 kpi', 'Streak', null, 'CHECK-INS');
+    p._body.append(
+      el('div', { class: 'k-label' }, 'consecutive days logged'),
+      el('div', { class: 'k-val tnum' }, s.current.toLocaleString(), ' ', el('small', {}, 'days')),
+      el('div', { class: 'k-sub' }, s.activeThisMonth + ' of ' + s.dayOfMonth + ' days this month · ' + s.totalLogged.toLocaleString() + ' logged all-time'),
+    );
+    // month strip — one tick per elapsed day, filled = logged
+    const strip = el('div', { class: 'spark-mini', style: 'display:flex;gap:2px;align-items:flex-end;height:22px' });
+    for (let i = 1; i <= s.dayOfMonth; i++) {
+      const lit = i <= s.activeThisMonth || s.activeThisMonth >= s.dayOfMonth;
+      strip.append(el('span', { style: `flex:1;height:${lit ? 16 : 6}px;background:${lit ? 'var(--accent)' : 'var(--border)'};border-radius:1px` }));
+    }
+    p._body.append(strip);
+    return p;
+  }
+
+  // ─────────────  KPI 4 · FOCUS  ─────────────
+  function kpiFocus(W) {
+    const f = D.focus;
+    const p = panel('col-3 kpi', 'Focus', null, 'LAST 7 DAYS');
+    if (!f) { p._body.append(el('div', { class: 'k-sub' }, 'no recent activity')); return p; }
+    const r = (W.roster || []).find(x => x.id === f.project);
+    p._body.append(
+      el('div', { class: 'k-label' }, 'hottest project'),
+      el('div', { class: 'k-val', style: 'font-size:23px;line-height:1.1' }, pn(f.project)),
+      el('div', { class: 'k-sub' }, el('span', { class: 'mono', style: 'color:var(--accent-ink);font-weight:600' }, cn(f.project)),
+        ' · ' + f.events7d + ' events · ' + (r ? ago(r.ageDays) : '')),
+      f.lastTitle ? el('div', { class: 'k-sub', style: 'color:var(--muted);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, '"' + f.lastTitle + '"') : null,
+      r ? miniSpark(r.spark) : null,
+    );
+    p._body.style.cursor = 'pointer';
+    p.setAttribute('role', 'button');
+    p.setAttribute('tabindex', '0');
+    p.addEventListener('click', () => { SEL = SEL === f.project ? null : f.project; render(); });
+    p.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); SEL = SEL === f.project ? null : f.project; render(); } });
+    return p;
+  }
+
+  // ─────────────  ACTIVITY HISTORY  ─────────────
+  function historyPanel(W) {
+    const p = panel('col-7', 'Activity History', 'meetings · notes · content · outreach', W.days + 'D · ' + W.history.reduce((s, d) => s + d.total, 0) + ' events');
+    const rows = W.history;
+    const box = el('div', { class: 'chartbox' });
+    const w = 940, h = 240, m = { t: 12, r: 12, b: 22, l: 30 };
+    const iw = w - m.l - m.r, ih = h - m.t - m.b;
+    const active = SERIES.filter(s => !hidden.has(s.key));
+    const stackMax = Math.max(1, ...rows.map(r => active.reduce((a, s) => a + (r[s.key] || 0), 0)));
+    const x = i => m.l + (rows.length <= 1 ? 0 : i / (rows.length - 1) * iw);
+    const y = v => m.t + ih - v / stackMax * ih;
+    const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%', height: h, style: 'min-width:520px;display:block' });
+
+    // gridlines
+    const ticks = niceTicks(stackMax, 4);
+    for (const tv of ticks) {
+      svg.append(svgEl('line', { class: 'grid-l', x1: m.l, x2: w - m.r, y1: y(tv), y2: y(tv) }));
+      const tl = svgEl('text', { class: 'axis-t', x: m.l - 6, y: y(tv) + 3, 'text-anchor': 'end' }); tl.textContent = tv;
+      svg.append(tl);
+    }
+    // stacked areas
+    let base = rows.map(() => 0);
+    for (const s of active) {
+      const top0 = rows.map((r, i) => base[i] + (r[s.key] || 0));
+      let d = `M ${x(0)} ${y(base[0])}`;
+      rows.forEach((r, i) => d += ` L ${x(i)} ${y(top0[i])}`);
+      for (let i = rows.length - 1; i >= 0; i--) d += ` L ${x(i)} ${y(base[i])}`;
+      d += ' Z';
+      svg.append(svgEl('path', { d, fill: s.c, 'fill-opacity': .82, stroke: s.c, 'stroke-width': .6 }));
+      base = top0;
+    }
+    // x labels (~6)
+    const step = Math.max(1, Math.round(rows.length / 6));
+    rows.forEach((r, i) => {
+      if (i % step && i !== rows.length - 1) return;
+      const tl = svgEl('text', { class: 'axis-t', x: x(i), y: h - 6, 'text-anchor': 'middle' });
+      tl.textContent = fmtDay(r.date); svg.append(tl);
+    });
+    // crosshair
+    const cross = svgEl('line', { x1: 0, x2: 0, y1: m.t, y2: m.t + ih, stroke: 'var(--accent)', 'stroke-width': 1, opacity: 0 });
+    svg.append(cross);
+    const hit = svgEl('rect', { x: m.l, y: m.t, width: iw, height: ih, fill: 'transparent' });
+    hit.addEventListener('mousemove', ev => {
+      const bb = svg.getBoundingClientRect();
+      const rel = (ev.clientX - bb.left) / bb.width * w;
+      const i = Math.round(Math.max(0, Math.min(rows.length - 1, (rel - m.l) / iw * (rows.length - 1))));
+      cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('opacity', 1);
+      const r = rows[i];
+      tshow(`<div class="tt-h">${fmtDay(r.date)}</div>` +
+        active.map(s => `<div class="tt-r"><span style="color:${s.c}">■</span> ${s.label}: ${r[s.key] || 0}</div>`).join('') +
+        `<div class="tt-r" style="margin-top:2px">total ${r.total}</div>`, ev);
+    });
+    hit.addEventListener('mouseleave', () => { thide(); cross.setAttribute('opacity', 0); });
+    svg.append(hit);
+    box.append(svg);
+
+    const leg = el('div', { class: 'legend' });
+    for (const s of SERIES) {
+      leg.append(el('button', {
+        'aria-pressed': String(!hidden.has(s.key)),
+        onclick: () => { hidden.has(s.key) ? hidden.delete(s.key) : hidden.add(s.key); render(); }
+      }, el('span', { class: 'sw', style: 'background:' + s.c }), s.label));
+    }
+    p._body.append(box, leg);
+    return p;
+  }
+
+  // ─────────────  ACTIVITY LOG  ─────────────
+  function logPanel(W) {
+    let items = D.log.slice();
+    if (SEL) items = items.filter(e => e.project === SEL);
+    const srcFilter = logPanel._src || null;
+    if (srcFilter) items = items.filter(e => e.source === srcFilter);
+    const p = panel('col-5', 'Activity Log', 'most recent first', items.length + ' events');
+    const ctl = el('div', { class: 'log-ctl' });
+    for (const s of ['meeting', 'note', 'checkin', 'post', 'email']) {
+      ctl.append(el('button', {
+        class: 'chip', 'aria-pressed': String(srcFilter === s),
+        onclick: () => { logPanel._src = logPanel._src === s ? null : s; render(); }
+      }, s === 'email' ? 'outreach' : s === 'post' ? 'content' : s));
+    }
+    const ul = el('ul', { class: 'log' });
+    for (const e of items.slice(0, 90)) {
+      ul.append(el('li', { class: e.blocker ? 'blk' : '' },
+        el('span', { class: 't' }, fmtDT(e.ts).replace(',', '')),
+        el('span', { class: 'cn' }, e.codename),
+        el('span', { class: 'tx', title: e.title },
+          el('span', { class: 'src' }, e.source === 'email' ? 'out' : e.source === 'checkin' ? 'log' : e.source.slice(0, 4)),
+          e.title)));
+    }
+    if (!items.length) ul.append(el('li', {}, el('span', {}), el('span', {}), el('span', { class: 'tx' }, 'no events match')));
+    p._body.append(ctl, ul);
+    return p;
+  }
+
+  // ─────────────  CADENCE RIDGE  ─────────────
+  function ridgePanel(W) {
+    const R = W.ridge, cs = W.cadenceStats;
+    const p = panel('col-12', 'Cadence Ridge', 'when the work actually happens', R.length + ' weeks · hour of day');
+    const outer = el('div', { style: 'display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center' });
+    const stat = el('div', { class: 'statcol' });
+    const stats = [
+      [cs.activeDaysPerWeek, 'active days / wk'],
+      [cs.showUpRate + '%', 'days with activity'],
+      [hourLabel(cs.peakHour), 'peak hour'],
+      [cs.peakDow, 'busiest weekday'],
+      [cs.longestGapDays + 'd', 'longest quiet gap'],
+      [cs.volumeEvenness, 'volume evenness'],
+    ];
+    for (const [n, l] of stats) stat.append(el('div', { class: 's' }, el('span', { class: 'n tnum' }, String(n)), el('span', { class: 'l' }, l)));
+
+    const box = el('div', { class: 'chartbox' });
+    const w = 960, rowH = 26, top0 = 14, h = top0 + R.length * rowH + 26;
+    const m = { l: 46, r: 14 };
+    const iw = w - m.l - m.r;
+    const peak = Math.max(1, ...R.flatMap(r => r.hours));
+    const x = hh => m.l + hh / 23 * iw;
+    const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%', height: h, style: 'min-width:640px;display:block' });
+    for (let hh = 0; hh <= 24; hh += 6) {
+      svg.append(svgEl('line', { class: 'grid-l', x1: x(Math.min(hh, 23)), x2: x(Math.min(hh, 23)), y1: top0 - 6, y2: h - 22 }));
+      const t = svgEl('text', { class: 'axis-t', x: x(Math.min(hh, 23)), y: h - 8, 'text-anchor': 'middle' });
+      t.textContent = hourLabel(hh % 24); svg.append(t);
+    }
+    R.forEach((r, i) => {
+      const baseY = top0 + i * rowH + rowH;
+      const amp = rowH * 2.1;
+      let d = `M ${x(0)} ${baseY}`;
+      for (let hh = 0; hh <= 23; hh++) d += ` L ${x(hh)} ${baseY - r.hours[hh] / peak * amp}`;
+      d += ` L ${x(23)} ${baseY} Z`;
+      const recent = i >= R.length - 1;
+      svg.append(svgEl('path', { d, fill: 'var(--accent)', 'fill-opacity': (0.06 + 0.5 * (i + 1) / R.length).toFixed(2),
+        stroke: 'var(--accent)', 'stroke-width': recent ? 1.4 : 0.8, 'stroke-opacity': (0.3 + 0.6 * (i + 1) / R.length).toFixed(2) }));
+      const wl = svgEl('text', { class: 'lbl', x: m.l - 8, y: baseY - 3, 'text-anchor': 'end' });
+      wl.textContent = new Date(r.week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', timeZone: D.tz });
+      svg.append(wl);
+      const hit = svgEl('rect', { x: m.l, y: baseY - rowH, width: iw, height: rowH * 1.4, fill: 'transparent' });
+      hit.addEventListener('mousemove', ev => {
+        const bb = svg.getBoundingClientRect();
+        const hh = Math.round(Math.max(0, Math.min(23, ((ev.clientX - bb.left) / bb.width * w - m.l) / iw * 23)));
+        tshow(`<div class="tt-h">week of ${fmtDay(r.week)}</div><div class="tt-r">${hourLabel(hh)}: ${r.hours[hh]} events</div><div class="tt-r">${r.total} that week</div>`, ev);
+      });
+      hit.addEventListener('mouseleave', thide);
+      svg.append(hit);
+    });
+    box.append(svg);
+    outer.append(stat, box);
+    p._body.append(outer);
+    return p;
+  }
+
+  // ─────────────  PROJECT FLOW (chord)  ─────────────
+  function flowPanel(W) {
+    const F = W.flow;
+    const p = panel('col-6', 'Project Flow', 'what shares a day with what', F.pairs.length + ' linked pairs');
+    // arcs = projects present, ranked by involvement
+    const weight = {};
+    for (const pr of F.pairs) { weight[pr.a] = (weight[pr.a] || 0) + pr.days; weight[pr.b] = (weight[pr.b] || 0) + pr.days; }
+    let arcs = F.nodes.filter(n => weight[n]).sort((a, b) => weight[b] - weight[a]).slice(0, 9);
+    const aset = new Set(arcs);
+    const N = arcs.length;
+    const box = el('div', { class: 'chartbox' });
+    const S = 340, cx = S / 2, cy = S / 2, R = S / 2 - 46;
+    const svg = svgEl('svg', { viewBox: `0 0 ${S} ${S}`, width: '100%', height: 320, style: 'max-width:420px;margin:0 auto;display:block' });
+    const ang = i => -Math.PI / 2 + i * 2 * Math.PI / N;
+    const pt = (i, rr = R) => [cx + rr * Math.cos(ang(i)), cy + rr * Math.sin(ang(i))];
+    const idx = {}; arcs.forEach((a, i) => idx[a] = i);
+    const maxPair = Math.max(1, ...F.pairs.filter(pr => aset.has(pr.a) && aset.has(pr.b)).map(pr => pr.days));
+    // ribbons
+    for (const pr of F.pairs) {
+      if (!aset.has(pr.a) || !aset.has(pr.b)) continue;
+      const [x1, y1] = pt(idx[pr.a]), [x2, y2] = pt(idx[pr.b]);
+      const sel = SEL && (pr.a === SEL || pr.b === SEL);
+      const rib = svgEl('path', {
+        d: `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`,
+        fill: 'none', stroke: sel ? 'var(--accent)' : 'var(--ink-2)',
+        'stroke-width': (0.6 + pr.days / maxPair * 4).toFixed(2),
+        'stroke-opacity': SEL ? (sel ? .8 : .06) : (0.10 + pr.days / maxPair * 0.33).toFixed(2),
+        'stroke-linecap': 'round',
+      });
+      rib.addEventListener('mouseenter', e => { rib.setAttribute('stroke', 'var(--accent)'); rib.setAttribute('stroke-opacity', .85);
+        tshow(`<div class="tt-h">${cn(pr.a)} ↔ ${cn(pr.b)}</div><div class="tt-r">${pr.days} days both active</div>`, e); });
+      rib.addEventListener('mousemove', tmove);
+      rib.addEventListener('mouseleave', () => { thide(); render(); });
+      svg.append(rib);
+    }
+    // arc nodes + labels
+    arcs.forEach((a, i) => {
+      const [px, py] = pt(i);
+      const on = SEL === a;
+      const c = svgEl('circle', { cx: px, cy: py, r: on ? 7 : 5, fill: on ? 'var(--accent)' : 'var(--panel)',
+        stroke: 'var(--accent)', 'stroke-width': 1.6, style: 'cursor:pointer' });
+      c.addEventListener('click', () => { SEL = SEL === a ? null : a; render(); });
+      c.addEventListener('mouseenter', e => tshow(`<div class="tt-h">${cn(a)}</div><div class="tt-r">${pn(a)} · ${weight[a]} co-active days</div>`, e));
+      c.addEventListener('mousemove', tmove); c.addEventListener('mouseleave', thide);
+      svg.append(c);
+      const [lx, ly] = pt(i, R + 16);
+      const t = svgEl('text', {
+        x: lx, y: ly + 3, 'text-anchor': Math.abs(lx - cx) < 12 ? 'middle' : lx < cx ? 'end' : 'start',
+        class: 'lbl', style: 'cursor:pointer', fill: on ? 'var(--accent-ink)' : 'var(--muted)',
+      });
+      t.textContent = cn(a); t.addEventListener('click', () => { SEL = SEL === a ? null : a; render(); });
+      svg.append(t);
+    });
+    box.append(svg);
+    const strong = v => el('b', { style: 'color:var(--ink);font-family:var(--mono);font-weight:600' }, String(v));
+    const sub = el('div', { class: 'legend', style: 'justify-content:space-between;gap:8px' },
+      el('span', {}, 'switches/day ', strong(F.switchRate)),
+      el('span', {}, 'deepest ', strong(F.deepestDay.project ? cn(F.deepestDay.project) + ' ×' + F.deepestDay.count : '—')),
+      el('span', {}, 'tightest ', strong(F.tightestPair ? cn(F.tightestPair.a) + '·' + cn(F.tightestPair.b) : '—')),
+    );
+    p._body.append(box, sub);
+    return p;
+  }
+
+  // ─────────────  DOMAIN BALANCE  ─────────────
+  function domainPanel(W) {
+    const B = W.domainBalance;
+    const p = panel('col-6', 'Domain Balance', 'share of attention vs. the window before', 'life areas');
+    const box = el('div', { class: 'chartbox' });
+    const rowH = 34, w = 460, h = B.length * rowH + 8, m = { l: 92, r: 44 };
+    const iw = w - m.l - m.r;
+    const mx = Math.max(10, ...B.map(d => Math.max(d.share, d.prevShare)));
+    const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%', height: h, style: 'min-width:360px;display:block' });
+    B.forEach((d, i) => {
+      const y = i * rowH + 6, bh = 13;
+      const bw = d.share / mx * iw, pw = d.prevShare / mx * iw;
+      const lab = svgEl('text', { class: 'lbl', x: m.l - 10, y: y + bh, 'text-anchor': 'end' });
+      lab.textContent = DOWNAMES[d.id] || d.id; svg.append(lab);
+      svg.append(svgEl('rect', { x: m.l, y, width: Math.max(1, bw), height: bh, rx: 1.5, fill: 'var(--accent)', 'fill-opacity': .9 }));
+      // prior marker
+      svg.append(svgEl('line', { x1: m.l + pw, x2: m.l + pw, y1: y - 2, y2: y + bh + 2, stroke: 'var(--ink-2)', 'stroke-width': 1.4, 'stroke-dasharray': '2 2' }));
+      const drift = +(d.share - d.prevShare).toFixed(1);
+      const dv = svgEl('text', { class: 'axis-t', x: m.l + Math.max(bw, pw) + 6, y: y + bh, fill: drift > 0.3 ? 'var(--good)' : drift < -0.3 ? 'var(--bad)' : 'var(--faint)' });
+      dv.textContent = (drift > 0 ? '+' : '') + drift; svg.append(dv);
+      const hit = svgEl('rect', { x: 0, y: y - 3, width: w, height: rowH, fill: 'transparent' });
+      hit.addEventListener('mouseenter', e => tshow(`<div class="tt-h">${DOWNAMES[d.id] || d.id}</div><div class="tt-r">now: ${d.share}% (${d.count} events)</div><div class="tt-r">prior window: ${d.prevShare}%</div><div class="tt-r">drift: ${drift > 0 ? '+' : ''}${drift} pts</div>`, e));
+      hit.addEventListener('mousemove', tmove); hit.addEventListener('mouseleave', thide);
+      svg.append(hit);
+    });
+    box.append(svg);
+    p._body.append(box, el('div', { class: 'legend' },
+      el('span', {}, el('span', { class: 'sw', style: 'background:var(--accent);display:inline-block' }), ' current'),
+      el('span', {}, '┆ prior window')));
+    return p;
+  }
+
+  // ─────────────  KNOWLEDGE GRAPH  ─────────────
+  const SLOT = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)'];
+  function graphPanel() {
+    const G = D.graph;
+    const notesMode = G.mode !== 'projects';
+    const p = panel('col-12', 'Knowledge Graph',
+      notesMode ? 'notes that link to or share tags with each other' : 'projects that share working days (link graph too sparse to draw)',
+      `${G.stats.notes} ${notesMode ? 'notes' : 'projects'} · ${G.stats.edges} links · ${G.stats.lookbackDays}d`);
+
+    const cnt = {};
+    for (const n of G.nodes) cnt[n.project] = (cnt[n.project] || 0) + 1;
+    const topP = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 5).map(e => e[0]);
+    const colOf = pid => topP.includes(pid) ? SLOT[topP.indexOf(pid)] : 'var(--faint)';
+
+    const outer = el('div', { style: 'display:grid;grid-template-columns:1fr 172px;gap:16px;align-items:center' });
+    const box = el('div', { class: 'chartbox' });
+    const w = 1000, h = 560;
+    const svg = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%', height: 460, style: 'min-width:620px;display:block' });
+
+    // edges
+    for (const e of G.edges) {
+      const a = G.nodes[e.s], b = G.nodes[e.t]; if (!a || !b) continue;
+      const dim = SEL && a.project !== SEL && b.project !== SEL;
+      svg.append(svgEl('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+        stroke: e.kind === 'link' ? 'var(--ink-2)' : 'var(--faint)',
+        'stroke-width': (e.w ? Math.min(4, 0.6 + e.w * 0.5) : e.kind === 'link' ? 1.1 : 0.7),
+        'stroke-opacity': dim ? .05 : e.kind === 'link' ? .42 : .2 }));
+    }
+    // cluster labels (behind nodes)
+    for (const pid of topP) {
+      const ns = G.nodes.filter(n => n.project === pid);
+      if (ns.length < 2 && notesMode) continue;
+      const lx = ns.reduce((s, n) => s + n.x, 0) / ns.length;
+      const ly = Math.min(...ns.map(n => n.y - n.r)) - 7;
+      const dim = SEL && SEL !== pid;
+      const t = svgEl('text', { x: lx, y: ly, 'text-anchor': 'middle',
+        style: `font:600 11px var(--mono);letter-spacing:.08em;fill:${colOf(pid)};opacity:${dim ? .25 : .9}` });
+      t.textContent = cn(pid); svg.append(t);
+    }
+    // nodes
+    for (const n of G.nodes) {
+      const dim = SEL && n.project !== SEL;
+      const c = svgEl('circle', { cx: n.x, cy: n.y, r: n.r, fill: colOf(n.project),
+        'fill-opacity': dim ? .12 : .92, stroke: 'var(--panel)', 'stroke-width': 1.3, style: 'cursor:pointer' });
+      c.addEventListener('mouseenter', e => tshow(
+        `<div class="tt-h">${n.base}</div><div class="tt-r">${pn(n.project)} · ${notesMode ? n.edits + ' edit' + (n.edits > 1 ? 's' : '') : n.edits + ' events'} · ${n.deg} link${n.deg === 1 ? '' : 's'}</div>`, e));
+      c.addEventListener('mousemove', tmove); c.addEventListener('mouseleave', thide);
+      c.addEventListener('click', () => { SEL = SEL === n.project ? null : n.project; render(); });
+      svg.append(c);
+      if (!notesMode) {
+        const t = svgEl('text', { x: n.x, y: n.y + n.r + 12, 'text-anchor': 'middle', class: 'lbl' });
+        t.textContent = n.base; svg.append(t);
+      }
+    }
+    box.append(svg);
+
+    const side = el('div', { class: 'statcol' });
+    side.append(
+      el('div', { class: 's' }, el('span', { class: 'n tnum' }, String(G.stats.linkEdges)), el('span', { class: 'l' }, 'direct [[links]]')),
+      el('div', { class: 's' }, el('span', { class: 'n tnum' }, String(G.stats.clusters)), el('span', { class: 'l' }, notesMode ? 'project clusters' : 'projects active')),
+      el('div', { class: 's' }, el('span', { class: 'n', style: 'font-size:12px;line-height:1.3' }, G.stats.mostConnected || '—'), el('span', { class: 'l' }, 'most connected · ' + G.stats.mostConnectedDeg + ' links')),
+    );
+    const key = el('div', { class: 'legend', style: 'flex-direction:column;gap:5px;align-items:flex-start;margin-top:12px' });
+    topP.forEach((pid, i) => key.append(el('span', {}, el('span', { class: 'sw', style: 'background:' + SLOT[i] }), cn(pid))));
+    if (G.nodes.some(n => !topP.includes(n.project))) key.append(el('span', {}, el('span', { class: 'sw', style: 'background:var(--faint)' }), 'other'));
+    side.append(key);
+    outer.append(box, side);
+    p._body.append(outer);
+    return p;
+  }
+
+  // ─────────────  ROSTER  ─────────────
+  function rosterPanel(W) {
+    const p = panel('col-12', 'Project Roster', D.log.length ? null : null, W.roster.length + ' tracked · click to filter');
+    const grd = el('div', { class: 'roster' });
+    for (const r of W.roster) {
+      const card = el('button', {
+        class: 'rcard' + (SEL && SEL !== r.id ? ' dim' : ''),
+        'aria-pressed': String(SEL === r.id),
+        onclick: () => { SEL = SEL === r.id ? null : r.id; render(); },
+      });
+      card.append(
+        el('div', { class: 'r-top' },
+          el('span', { class: 'r-num' }, r.num), el('span', { class: 'r-cn' }, r.codename),
+          el('span', { class: 'pill ' + (r.blocker ? 'blocked' : r.status), style: 'margin-left:auto' }, r.blocker ? 'blocked' : r.status)),
+        el('div', { class: 'r-name' }, r.name),
+        el('div', { class: 'r-tag' }, r.tagline || ''),
+        sparkSVG(r.spark),
+        el('div', { class: 'r-foot' },
+          el('span', { class: 'r-ev tnum' }, r.events + ' events'),
+          el('span', { class: 'r-age' }, r.status === 'dormant' ? 'dormant' : ago(r.ageDays))),
+      );
+      grd.append(card);
+    }
+    p._body.append(grd);
+    return p;
+  }
+  function sparkSVG(pts) {
+    const w = 190, h = 26, mx = Math.max(1, ...pts);
+    const x = i => i / (pts.length - 1) * w;
+    const y = v => h - 2 - v / mx * (h - 4);
+    let d = `M 0 ${h} L ${x(0)} ${y(pts[0])}`;
+    pts.forEach((v, i) => d += ` L ${x(i)} ${y(v)}`);
+    d += ` L ${w} ${h} Z`;
+    const s = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, width: '100%', height: h, preserveAspectRatio: 'none', style: 'display:block' });
+    s.append(svgEl('path', { d, fill: 'var(--accent)', 'fill-opacity': .13 }));
+    let ld = `M ${x(0)} ${y(pts[0])}`; pts.forEach((v, i) => ld += ` L ${x(i)} ${y(v)}`);
+    s.append(svgEl('path', { d: ld, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 1.3 }));
+    s.append(svgEl('circle', { cx: x(pts.length - 1), cy: y(pts[pts.length - 1]), r: 2.4, fill: 'var(--accent)' }));
+    return s;
+  }
+
+  // ─────────────  FOOTER  ─────────────
+  function renderFooter() {
+    foot.innerHTML = '';
+    const ext = D.external;
+    const b = ext && ext.buffer;
+    foot.append(
+      el('div', {}, el('b', {}, 'Vault sources'),
+        `Granola meetings · note file activity · daily check-ins, as of ${fmtDay(D.generatedAt)}. `,
+        `${D.scan.granola2026} meetings, ${D.scan.notesTouched.toLocaleString()} notes touched, ${D.scan.checkinsLogged.toLocaleString()} check-ins logged.`),
+      el('div', {}, el('b', {}, 'Content + outreach'),
+        b
+          ? `Buffer + Gmail, pulled ${fmtDay(ext.generatedAt)}. ${b.posts} posts drove ${b.impressions.toLocaleString()} impressions in the last 12 weeks (${b.reactions} reactions, ${b.comments} comments).`
+          : 'Buffer / Gmail not merged — content + outreach bands read 0. Run merge-external.mjs or ask Claude to refresh.'),
+      el('div', {}, el('b', {}, 'Refresh'),
+        'From the vault: ', el('code', {}, 'node build-dashboard.mjs && node merge-external.mjs'), '. Or ask Claude to refresh the hosted copy.'),
+      el('div', {}, el('b', {}, 'Reading it'),
+        'Cadence, flow and the graph use vault events only (they need per-event detail). Check-in classification is heuristic; project rules sit at the top of build-dashboard.mjs, yours to tune. Bulk-edit days are capped.'),
+    );
+  }
+
+  // ---- helpers -----------------------------------------------------------
+  function niceTicks(max, n) {
+    const step = Math.max(1, Math.ceil(max / n));
+    const out = []; for (let v = 0; v <= max; v += step) out.push(v); return out;
+  }
+  function hourLabel(h) { h = ((h % 24) + 24) % 24; const ap = h < 12 ? 'a' : 'p'; let hr = h % 12; if (!hr) hr = 12; return hr + ap; }
+
+  function mergeExternal(D) {
+    const x = D.external; if (!x || !x.daily) return;
+    const byDay = Object.fromEntries((x.daily || []).map(r => [r.date, r]));
+    for (const W of Object.values(D.windows)) {
+      for (const row of W.history) {
+        const e = byDay[row.date]; if (!e) continue;
+        row.post = e.post || 0; row.email = e.email || 0;
+        row.total = row.meeting + row.note + row.checkin + row.post + row.email;
+      }
+    }
+  }
+
+  render();
+})();
+</script>
