@@ -4,10 +4,8 @@ A mission-control dashboard for one person's work, built out of an Obsidian vaul
 
 **[→ Open the live dashboard](https://rayadamas.github.io/louden-desk)**
 
-It started as a joke. In September 2026 a [parody dashboard](https://x.com/josephdelong/status/2096988521768555000)
-went around, captioned "the most unemployed person you know with AI psychosis has a dashboard
-like this" - a Bloomberg-terminal pastiche where a swarm of AI agents with city codenames
-runs a crypto strategy and nets $1.93. The joke is the over-engineering. The information
+It started as a joke. A Bloomberg-terminal pastiche where a swarm of AI agents with city codenames
+runs a crypto strategy. The joke is the over-engineering. The information
 design underneath it is genuinely good: one glance for status, then each panel is a different
 analytical lens on the same underlying activity.
 
